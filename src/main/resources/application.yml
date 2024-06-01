@@ -1,0 +1,69 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: app-kafka
+  kafka:
+    # kafka集群服务器，多个服务器可以通过','隔开
+    bootstrap-servers: 192.168.31.49:9092,192.168.31.49:9093
+    producer:
+      # 当有多个消息需要发送到同一个分区时，生产者会把它们放到同一批次，指定了一个的内存大小，bytes
+      batch-size: 16384
+      # 生产者与broker之间的同步写入关系
+      # 0: 只发送不等待broker任何回应
+      # 1: 只要集群分区的leader写入后，就会收到一个响应
+      # -1 / all : 必须集群分区对应的ISR集合全部写入后才会进行回应
+      acks: -1
+      # 发生错误后消息重发次数，开启事务设置必须大于0
+      retries: 10
+
+      # key的序列化方式
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # value的序列化方式
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+      # 开启事务，必须在开启事务的方法中发送
+      #transaction-id-prefix: kafkaTx-
+
+      # 生产者缓冲区大小
+      #buffer-memory: 1024000
+
+    consumer:
+      # 消费者组id
+      group-id: testGroup
+
+      # 是否允许拉去后自动提交
+      enable-auto-commit: false
+
+      # 自动提交时间间隔，ms
+      auto-commit-interval: 2000
+
+      # 指定了一个消费者在读取一个没有偏移量的分区时或者偏移量无效的情况下应该如何处理
+      # earliest： 当各分区下已有提交的offset时，从提交的offset开始，否则从头开始
+      # latest： 无提交的offset时，从消费者新产生的记录
+      # none：只要有一个分区不存在已提交的offset，则抛出异常
+      auto-offset-reset: earliest
+
+      # 开启batch之后，每次拉取最大的记录数
+      max-poll-records: 500
+
+      # key-value的反序列化方式
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+    listener:
+      # 当指定topic不存在时会抛出异常，false则会忽略
+      missing-topics-fatal: true
+      #type: single
+      type: batch
+
+      # 手动提交开启时，指定手动提交方式
+      ack-mode: manual
+
+      # 两次poll之间的最大间隔，默认值为5分钟，超过会触发re-balance
+      poll-timeout: 600000
+
+
+
+
